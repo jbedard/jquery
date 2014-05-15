@@ -29,9 +29,8 @@ Data.prototype = {
 			return 0;
 		}
 
-		var descriptor = {},
-			// Check if the owner object already has a cache key
-			unlock = owner[ this.expando ];
+		// Check if the owner object already has a cache key
+		var unlock = owner[ this.expando ];
 
 		// If not, create one
 		if ( !unlock ) {
@@ -39,14 +38,12 @@ Data.prototype = {
 
 			// Secure it in a non-enumerable, non-writable property
 			try {
-				descriptor[ this.expando ] = { value: unlock };
-				Object.defineProperties( owner, descriptor );
+				Object.defineProperty( owner, this.expando, { value: unlock } );
 
 			// Support: Android < 4
 			// Fallback to a less secure definition
 			} catch ( e ) {
-				descriptor[ this.expando ] = unlock;
-				jQuery.extend( owner, descriptor );
+				owner[ this.expando ] = unlock;
 			}
 		}
 

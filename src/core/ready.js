@@ -62,6 +62,11 @@ function completed() {
 	document.removeEventListener( "DOMContentLoaded", completed );
 	window.removeEventListener( "load", completed );
 	jQuery.ready();
+
+	// Process all scheduled Deferred callbacks immediately
+	// to ensure ready handlers are fired synchronously along with the event
+	// which triggered this (most likely DOMContentLoaded)
+	jQuery.Deferred.tick();
 }
 
 // Catch cases where $(document).ready() is called

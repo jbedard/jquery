@@ -45,6 +45,8 @@ function adoptValue( value, resolve, reject ) {
 	}
 }
 
+var scheduleQueue = [];
+
 jQuery.extend( {
 
 	Deferred: function( func ) {
@@ -212,12 +214,14 @@ jQuery.extend( {
 										}
 									};
 
+							scheduleQueue.push( process );
+
 							// Support: Promises/A+ section 2.3.3.3.1
 							// https://promisesaplus.com/#point-57
 							// Re-resolve promises immediately to dodge false rejection from
 							// subsequent errors
 							if ( depth ) {
-								process();
+								jQuery.Deferred.tick();
 							} else {
 
 								// Call an optional hook to record the stack, in case of exception
@@ -225,7 +229,11 @@ jQuery.extend( {
 								if ( jQuery.Deferred.getStackHook ) {
 									process.stackTrace = jQuery.Deferred.getStackHook();
 								}
-								window.setTimeout( process );
+
+								// If this was the first process pushed onto the queue then schedule them to be run
+								if ( scheduleQueue.length === 1 ) {
+									window.setTimeout( jQuery.Deferred.tick );
+								}
 							}
 						};
 					}
@@ -384,6 +392,12 @@ jQuery.extend( {
 		return master.promise();
 	}
 } );
+
+jQuery.Deferred.tick = function() {
+	jQuery.each( scheduleQueue.splice( 0 ), function( i, process ) {
+		process();
+	} );
+};
 
 return jQuery;
 } );

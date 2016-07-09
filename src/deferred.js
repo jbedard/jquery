@@ -46,6 +46,7 @@ function adoptValue( value, resolve, reject ) {
 }
 
 var scheduleQueue = [];
+var scheduleQueueTimeout;
 
 jQuery.extend( {
 
@@ -229,11 +230,11 @@ jQuery.extend( {
 								if ( jQuery.Deferred.getStackHook ) {
 									process.stackTrace = jQuery.Deferred.getStackHook();
 								}
+							}
 
-								// If this was the first process pushed onto the queue then schedule them to be run
-								if ( scheduleQueue.length === 1 ) {
-									window.setTimeout( jQuery.Deferred.tick );
-								}
+							// If there are pending processes then ensure they are scheduled
+							if ( !scheduleQueueTimeout && scheduleQueue.length ) {
+								scheduleQueueTimeout = window.setTimeout( jQuery.Deferred.tick );
 							}
 						};
 					}
@@ -394,6 +395,7 @@ jQuery.extend( {
 } );
 
 jQuery.Deferred.tick = function() {
+	scheduleQueueTimeout = undefined;
 	jQuery.each( scheduleQueue.splice( 0 ), function( i, process ) {
 		process();
 	} );
